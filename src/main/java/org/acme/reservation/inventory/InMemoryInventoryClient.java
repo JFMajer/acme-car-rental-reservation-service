@@ -3,6 +3,7 @@ package org.acme.reservation.inventory;
 import jakarta.inject.Singleton;
 import java.util.List;
 
+@Singleton
 public class InMemoryInventoryClient implements InventoryClient {
 
     private static final List<Car> ALL_CARS = List.of(
@@ -13,7 +14,7 @@ public class InMemoryInventoryClient implements InventoryClient {
     );
 
     @Override
-    public List<Car> getAllCars() {
+    public List<Car> allCars() {
         return ALL_CARS;
     }
 }

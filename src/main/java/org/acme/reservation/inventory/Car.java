@@ -1,4 +1,4 @@
-package org.acme.reservation.inventory.car;
+package org.acme.reservation.inventory;
 
 public class Car {
 
