@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
@@ -13,16 +14,17 @@ import org.acme.reservation.inventory.InventoryClient;
 import org.acme.reservation.reservation.Reservation;
 import org.acme.reservation.reservation.ReservationsRepository;
 import org.jboss.resteasy.reactive.RestQuery;
+import jakarta.ws.rs.Consumes;
 
 @Path("reservation")
 @Produces(MediaType.APPLICATION_JSON)
 public class ReservationResource {
 
-    private final ReservationRepository reservationRepository;
+    private final ReservationsRepository reservationsRepository;
     private final InventoryClient inventoryClient;
 
-    public ReservationResource(ReservationRepository reservations, InventoryClient inventoryClient) {
-        this.reservationRepository = reservations;
+    public ReservationResource(ReservationsRepository reservations, InventoryClient inventoryClient) {
+        this.reservationsRepository = reservations;
         this.inventoryClient = inventoryClient;
     }
 
@@ -32,13 +34,21 @@ public class ReservationResource {
         List<Car> availableCars = inventoryClient.allCars();
         Map<Long, Car> carsById = new HashMap<>();
         for (Car car : availableCars) {
-            carsById.put(car.id(), car);
+            carsById.put(car.getId(), car);
         }
 
-        List<Reservation> reservations = reservationRepository.findAll();
-        if (reservation.isReserved(startDate, endDate)) {
-            carsById.remove(reservation.carId());
+        List<Reservation> reservations = reservationsRepository.findAll();
+        for (Reservation reservation : reservations) {
+            if (reservation.isReserved(startDate, endDate)) {
+                carsById.remove(reservation.carId);
+            }
         }
+        return carsById.values();
     }
-    return carsById.values();
+
+    @Consumes(MediaType.APPLICATION_JSON)
+    @POST
+    public Reservation make(Reservation reservation) {
+        return reservationsRepository.save(reservation);
+    }
 }
