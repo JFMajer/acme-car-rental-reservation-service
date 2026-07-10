@@ -1,0 +1,44 @@
+package org.acme.reservation.rest;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import org.acme.reservation.inventory.Car;
+import org.acme.reservation.inventory.InventoryClient;
+import org.acme.reservation.reservation.Reservation;
+import org.acme.reservation.reservation.ReservationsRepository;
+import org.jboss.resteasy.reactive.RestQuery;
+
+@Path("reservation")
+@Produces(MediaType.APPLICATION_JSON)
+public class ReservationResource {
+
+    private final ReservationRepository reservationRepository;
+    private final InventoryClient inventoryClient;
+
+    public ReservationResource(ReservationRepository reservations, InventoryClient inventoryClient) {
+        this.reservationRepository = reservations;
+        this.inventoryClient = inventoryClient;
+    }
+
+    @GET
+    @Path("availability")
+    public Collection<Car> availability(@RestQuery LocalDate startDate, @RestQuery LocalDate endDate) {
+        List<Car> availableCars = inventoryClient.allCars();
+        Map<Long, Car> carsById = new HashMap<>();
+        for (Car car : availableCars) {
+            carsById.put(car.id(), car);
+        }
+
+        List<Reservation> reservations = reservationRepository.findAll();
+        if (reservation.isReserved(startDate, endDate)) {
+            carsById.remove(reservation.carId());
+        }
+    }
+    return carsById.values();
+}
