@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.quarkus.logging.Log;
+import io.smallrye.graphql.client.GraphQLClient;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -14,6 +15,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import org.acme.reservation.inventory.Car;
+import org.acme.reservation.inventory.GraphQLInventoryClient;
 import org.acme.reservation.inventory.InventoryClient;
 import org.acme.reservation.rental.Rental;
 import org.acme.reservation.rental.RentalClient;
@@ -32,7 +34,7 @@ public class ReservationResource {
     private final RentalClient rentalClient;
 
     public ReservationResource(ReservationsRepository reservations,
-                               InventoryClient inventoryClient,
+                               @GraphQLClient("inventory") GraphQLInventoryClient inventoryClient,
                                @RestClient RentalClient rentalClient) {
         this.reservationsRepository = reservations;
         this.inventoryClient = inventoryClient;
@@ -46,11 +48,8 @@ public class ReservationResource {
         // this is just a dummy value for the time being
         String userId = "x";
         if (reservation.startDay.equals(LocalDate.now())) {
-            Log.info("Start day is today, starting rental...");
             Rental rental = rentalClient.startRental(userId, String.valueOf(result.id));
             Log.info("Successfully started rental " + rental);
-        } else {
-            Log.info("Start day is not today, skipping rental start");
         }
         return result;
     }
@@ -64,7 +63,7 @@ public class ReservationResource {
         // create a map from id to car
         Map<Long, Car> carsById = new HashMap<>();
         for (Car car : availableCars) {
-            carsById.put(car.getId(), car);
+            carsById.put(car.id, car);
         }
 
         // get all current reservations
